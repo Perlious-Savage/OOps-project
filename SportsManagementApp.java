@@ -5,33 +5,48 @@ import java.awt.event.*;
 import java.util.*;
 
 public class SportsManagementApp extends JFrame {
-    private JTabbedPane mainTabbedPane;
-    private LogisticsPanel logisticsPanel;
-    private MarketingPanel marketingPanel;
-    private PRMediaPanel prMediaPanel;
-    private SponsorshipPanel sponsorshipPanel;
-    private RegistrationsPanel registrationsPanel;
-
+    private JPanel logisticsPanel, marketingPanel, prMediaPanel, sponsorshipPanel, dashboardPanel;
+    private JPanel registrationsPanel;
     public SportsManagementApp() {
         setTitle("Sports Management System");
         setSize(1000, 700);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
 
-        mainTabbedPane = new JTabbedPane();
+        // Initialize Panels
+        logisticsPanel = new LogisticsPanel(this); // Pass the current instance to panels
+        marketingPanel = new MarketingPanel(this);
+        prMediaPanel = new PRMediaPanel(this);
+        sponsorshipPanel = new SponsorshipPanel(this);
+        registrationsPanel = new RegistrationsPanel(this);
+        // Dashboard Panel
+        dashboardPanel = new DashboardScreen(this);
 
-        logisticsPanel = new LogisticsPanel();
-        marketingPanel = new MarketingPanel();
-        prMediaPanel = new PRMediaPanel();
-        sponsorshipPanel = new SponsorshipPanel();
-        registrationsPanel = new RegistrationsPanel();
+        // Initially show the dashboard
+        setContentPane(dashboardPanel);
 
-        mainTabbedPane.addTab("Logistics", logisticsPanel);
-        mainTabbedPane.addTab("Marketing", marketingPanel);
-        mainTabbedPane.addTab("PR & Media", prMediaPanel);
-        mainTabbedPane.addTab("Sponsorship", sponsorshipPanel);
-        mainTabbedPane.addTab("Registrations", registrationsPanel);
+        setVisible(true);
+    }
 
-        add(mainTabbedPane);
+    // Method to switch panels
+    public void navigateToPanel(String panelName) {
+        JPanel targetPanel = switch (panelName) {
+            case "Logistics" -> logisticsPanel;
+            case "Marketing" -> marketingPanel;
+            case "PR & Media" -> prMediaPanel;
+            case "Sponsorship" -> sponsorshipPanel;
+            case "Registrations" -> registrationsPanel;
+            case "Dashboard" -> dashboardPanel;  // Add case for dashboard
+            default -> null;
+        };
+
+        if (targetPanel != null) {
+            setContentPane(targetPanel);
+            revalidate();
+            repaint();
+        } else {
+            JOptionPane.showMessageDialog(this, "Panel not found: " + panelName, "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     class LogisticsPanel extends JPanel {
@@ -40,18 +55,21 @@ public class SportsManagementApp extends JFrame {
         private JTable transportTable;
         private JPanel rightPanel;
         private JList<String> menuList;
+        private SportsManagementApp parentFrame;
+        private JButton backButton;
 
-        public LogisticsPanel() {
+        public LogisticsPanel(SportsManagementApp parentFrame) {
+            this.parentFrame = parentFrame; // Save the reference to the parent frame
             setLayout(new BorderLayout());
 
+            // Initialize menu list
             String[] menuItems = {"Inventory", "Venues", "Transport"};
             menuList = new JList<>(menuItems);
-            menuList.setFont(new Font("Arial", Font.BOLD, 18)); 
-            menuList.setFixedCellHeight(50); 
+            menuList.setFont(new Font("Arial", Font.BOLD, 18));
+            menuList.setFixedCellHeight(50);
             menuList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-            rightPanel = new JPanel(new BorderLayout());
-
+            // Create tables
             inventoryTable = createTable(
                     new String[]{"Item", "Quantity", "Location", "Status"},
                     new Object[][]{
@@ -74,6 +92,8 @@ public class SportsManagementApp extends JFrame {
                     }
             );
 
+            // Right panel for showing tables
+            rightPanel = new JPanel(new BorderLayout());
             menuList.addListSelectionListener(e -> {
                 if (!e.getValueIsAdjusting()) {
                     String selectedMenu = menuList.getSelectedValue();
@@ -85,14 +105,22 @@ public class SportsManagementApp extends JFrame {
                 }
             });
 
+            // Split pane for menu and right panel
             JSplitPane splitPane = new JSplitPane(
                     JSplitPane.HORIZONTAL_SPLIT,
                     new JScrollPane(menuList),
                     rightPanel
             );
-            splitPane.setDividerLocation(200); 
-
+            splitPane.setDividerLocation(200);
             add(splitPane, BorderLayout.CENTER);
+
+            // Back to Dashboard button
+            backButton = new JButton("Back to Dashboard");
+            backButton.addActionListener(e -> parentFrame.navigateToPanel("Dashboard"));
+
+            JPanel bottomPanel = new JPanel();
+            bottomPanel.add(backButton);
+            add(bottomPanel, BorderLayout.SOUTH);
         }
 
         private JTable createTable(String[] columns, Object[][] data) {
@@ -183,21 +211,27 @@ public class SportsManagementApp extends JFrame {
             model.removeRow(selectedRow);
         }
     }
+
     class MarketingPanel extends JPanel {
         private JTable campaignTable;
         private JTable contentCalendar;
         private JPanel rightPanel;
         private JList<String> menuList;
+        private SportsManagementApp parentFrame;
+        private JButton backButton;
 
-        public MarketingPanel() {
+        public MarketingPanel(SportsManagementApp parentFrame) {
+            this.parentFrame = parentFrame; // Save the reference to parent frame
             setLayout(new BorderLayout());
 
+            // Initialize menu list
             String[] menuItems = {"Campaigns", "Content Calendar"};
             menuList = new JList<>(menuItems);
             menuList.setFont(new Font("Arial", Font.BOLD, 18));
             menuList.setFixedCellHeight(50);
             menuList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
+            // Create tables
             campaignTable = createTable(
                     new String[]{"Campaign", "Start Date", "End Date", "Budget", "Status"},
                     new Object[][]{
@@ -213,6 +247,7 @@ public class SportsManagementApp extends JFrame {
                     }
             );
 
+            // Right panel for showing tables
             rightPanel = new JPanel(new BorderLayout());
             menuList.addListSelectionListener(e -> {
                 if (!e.getValueIsAdjusting()) {
@@ -225,6 +260,7 @@ public class SportsManagementApp extends JFrame {
                 }
             });
 
+            // Split pane for menu and right panel
             JSplitPane splitPane = new JSplitPane(
                     JSplitPane.HORIZONTAL_SPLIT,
                     new JScrollPane(menuList),
@@ -232,6 +268,14 @@ public class SportsManagementApp extends JFrame {
             );
             splitPane.setDividerLocation(200);
             add(splitPane, BorderLayout.CENTER);
+
+            // Back to Dashboard button
+            backButton = new JButton("Back to Dashboard");
+            backButton.addActionListener(e -> parentFrame.navigateToPanel("Dashboard"));
+
+            JPanel bottomPanel = new JPanel();
+            bottomPanel.add(backButton);
+            add(bottomPanel, BorderLayout.SOUTH);
         }
 
         private JTable createTable(String[] columns, Object[][] data) {
@@ -262,17 +306,66 @@ public class SportsManagementApp extends JFrame {
         }
 
         private void addRow(JTable table, String tabName) {
+            DefaultTableModel model = (DefaultTableModel) table.getModel();
+            int columnCount = model.getColumnCount();
+
+            JTextField[] fields = new JTextField[columnCount];
+            JPanel inputPanel = new JPanel(new GridLayout(columnCount, 2));
+
+            for (int i = 0; i < columnCount; i++) {
+                inputPanel.add(new JLabel(model.getColumnName(i) + ":"));
+                fields[i] = new JTextField();
+                inputPanel.add(fields[i]);
+            }
+
+            int result = JOptionPane.showConfirmDialog(this, inputPanel, "Add New " + tabName, JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+            if (result == JOptionPane.OK_OPTION) {
+                Object[] newRow = new Object[columnCount];
+                for (int i = 0; i < columnCount; i++) {
+                    newRow[i] = fields[i].getText().trim();
+                }
+                model.addRow(newRow);
+            }
         }
 
         private void updateRow(JTable table, String tabName) {
+            int selectedRow = table.getSelectedRow();
+            if (selectedRow == -1) {
+                JOptionPane.showMessageDialog(this, "Please select a row to update.", "No Selection", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            DefaultTableModel model = (DefaultTableModel) table.getModel();
+            int columnCount = model.getColumnCount();
+
+            JTextField[] fields = new JTextField[columnCount];
+            JPanel inputPanel = new JPanel(new GridLayout(columnCount, 2));
+
+            for (int i = 0; i < columnCount; i++) {
+                inputPanel.add(new JLabel(model.getColumnName(i) + ":"));
+                fields[i] = new JTextField(model.getValueAt(selectedRow, i).toString());
+                inputPanel.add(fields[i]);
+            }
+
+            int result = JOptionPane.showConfirmDialog(this, inputPanel, "Update " + tabName, JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+            if (result == JOptionPane.OK_OPTION) {
+                for (int i = 0; i < columnCount; i++) {
+                    model.setValueAt(fields[i].getText().trim(), selectedRow, i);
+                }
+            }
         }
 
         private void deleteRow(JTable table) {
+            int selectedRow = table.getSelectedRow();
+            if (selectedRow == -1) {
+                JOptionPane.showMessageDialog(this, "Please select a row to delete.", "No Selection", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            DefaultTableModel model = (DefaultTableModel) table.getModel();
+            model.removeRow(selectedRow);
         }
     }
-
-
-
 
     class PRMediaPanel extends JPanel {
         private JTable pressReleaseTable;
@@ -280,16 +373,21 @@ public class SportsManagementApp extends JFrame {
         private JTable mediaAssetsTable;
         private JPanel rightPanel;
         private JList<String> menuList;
+        private SportsManagementApp parentFrame;
+        private JButton backButton;
 
-        public PRMediaPanel() {
+        public PRMediaPanel(SportsManagementApp parentFrame) {
+            this.parentFrame = parentFrame; // Save the reference to the parent frame
             setLayout(new BorderLayout());
 
+            // Initialize menu list
             String[] menuItems = {"Press Releases", "Social Media Posts", "Media Assets"};
             menuList = new JList<>(menuItems);
             menuList.setFont(new Font("Arial", Font.BOLD, 18));
             menuList.setFixedCellHeight(50);
             menuList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
+            // Create tables
             pressReleaseTable = createTable(
                     new String[]{"Title", "Date", "Media Outlets", "Status"},
                     new Object[][]{
@@ -312,20 +410,20 @@ public class SportsManagementApp extends JFrame {
                     }
             );
 
+            // Right panel for showing tables
             rightPanel = new JPanel(new BorderLayout());
             menuList.addListSelectionListener(e -> {
                 if (!e.getValueIsAdjusting()) {
                     String selectedMenu = menuList.getSelectedValue();
-                    if ("Press Releases".equals(selectedMenu)) {
-                        updateRightPanel(pressReleaseTable, "Press Releases");
-                    } else if ("Social Media Posts".equals(selectedMenu)) {
-                        updateRightPanel(socialMediaTable, "Social Media Posts");
-                    } else if ("Media Assets".equals(selectedMenu)) {
-                        updateRightPanel(mediaAssetsTable, "Media Assets");
+                    switch (selectedMenu) {
+                        case "Press Releases" -> updateRightPanel(pressReleaseTable, "Press Releases");
+                        case "Social Media Posts" -> updateRightPanel(socialMediaTable, "Social Media Posts");
+                        case "Media Assets" -> updateRightPanel(mediaAssetsTable, "Media Assets");
                     }
                 }
             });
 
+            // Split pane for menu and right panel
             JSplitPane splitPane = new JSplitPane(
                     JSplitPane.HORIZONTAL_SPLIT,
                     new JScrollPane(menuList),
@@ -333,6 +431,14 @@ public class SportsManagementApp extends JFrame {
             );
             splitPane.setDividerLocation(200);
             add(splitPane, BorderLayout.CENTER);
+
+            // Back to Dashboard button
+            backButton = new JButton("Back to Dashboard");
+            backButton.addActionListener(e -> parentFrame.navigateToPanel("Dashboard"));
+
+            JPanel bottomPanel = new JPanel();
+            bottomPanel.add(backButton);
+            add(bottomPanel, BorderLayout.SOUTH);
         }
 
         private JTable createTable(String[] columns, Object[][] data) {
@@ -424,34 +530,40 @@ public class SportsManagementApp extends JFrame {
         }
     }
 
+
     class SponsorshipPanel extends JPanel {
         private JTable sponsorDetailsTable;
         private JTable sponsorLeadsTable;
         private JTable benefitsTrackerTable;
         private JPanel rightPanel;
         private JList<String> menuList;
+        private SportsManagementApp parentFrame;
+        private JButton backButton;
 
-        public SponsorshipPanel() {
+        public SponsorshipPanel(SportsManagementApp parentFrame) {
+            this.parentFrame = parentFrame; // Save the reference to parent frame
             setLayout(new BorderLayout());
 
+            // Initialize the menu list
             String[] menuItems = {"Sponsor Details", "Sponsor Leads", "Benefits Tracker"};
             menuList = new JList<>(menuItems);
             menuList.setFont(new Font("Arial", Font.BOLD, 18));
             menuList.setFixedCellHeight(50);
             menuList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
+            // Create the tables
             sponsorDetailsTable = createTable(
                     new String[]{"Sponsor Name", "Contact", "Contract Value", "Duration"},
                     new Object[][]{
-                            {"SportsTech Inc", "John Doe", "$100,000", "2024-2026"},
-                            {"HealthWear Brands", "Jane Smith", "$75,000", "2024-2025"}
+                            {"SportsTech Inc", "Tapas Balu", "$100,000", "2024-2026"},
+                            {"HealthWear Brands", "Tartineni", "$75,000", "2024-2025"}
                     }
             );
             sponsorLeadsTable = createTable(
                     new String[]{"Potential Sponsor", "Contact Person", "Initial Interest", "Follow-up Date"},
                     new Object[][]{
-                            {"Tech Innovations", "Mike Johnson", "High", "2024-08-15"},
-                            {"Fitness Gear Co", "Sarah Lee", "Medium", "2024-07-30"}
+                            {"Tech Innovations", "Gagan", "High", "2024-08-15"},
+                            {"Fitness Gear Co", "Priyanka", "Medium", "2024-07-30"}
                     }
             );
             benefitsTrackerTable = createTable(
@@ -462,16 +574,15 @@ public class SportsManagementApp extends JFrame {
                     }
             );
 
+            // Right panel for showing tables
             rightPanel = new JPanel(new BorderLayout());
             menuList.addListSelectionListener(e -> {
                 if (!e.getValueIsAdjusting()) {
                     String selectedMenu = menuList.getSelectedValue();
-                    if ("Sponsor Details".equals(selectedMenu)) {
-                        updateRightPanel(sponsorDetailsTable, "Sponsor Details");
-                    } else if ("Sponsor Leads".equals(selectedMenu)) {
-                        updateRightPanel(sponsorLeadsTable, "Sponsor Leads");
-                    } else if ("Benefits Tracker".equals(selectedMenu)) {
-                        updateRightPanel(benefitsTrackerTable, "Benefits Tracker");
+                    switch (selectedMenu) {
+                        case "Sponsor Details" -> updateRightPanel(sponsorDetailsTable, "Sponsor Details");
+                        case "Sponsor Leads" -> updateRightPanel(sponsorLeadsTable, "Sponsor Leads");
+                        case "Benefits Tracker" -> updateRightPanel(benefitsTrackerTable, "Benefits Tracker");
                     }
                 }
             });
@@ -483,6 +594,14 @@ public class SportsManagementApp extends JFrame {
             );
             splitPane.setDividerLocation(200);
             add(splitPane, BorderLayout.CENTER);
+
+            // Back to Dashboard button
+            backButton = new JButton("Back to Dashboard");
+            backButton.addActionListener(e -> parentFrame.navigateToPanel("Dashboard"));
+
+            JPanel bottomPanel = new JPanel();
+            bottomPanel.add(backButton);
+            add(bottomPanel, BorderLayout.SOUTH);
         }
 
         private JTable createTable(String[] columns, Object[][] data) {
@@ -573,58 +692,55 @@ public class SportsManagementApp extends JFrame {
             model.removeRow(selectedRow);
         }
     }
-
-
     class RegistrationsPanel extends JPanel {
         private JTable participantTable;
         private JTable paymentTable;
         private JPanel rightPanel;
         private JList<String> menuList;
+        private SportsManagementApp parentFrame;
+        private JButton backButton;
 
-        public RegistrationsPanel() {
+        public RegistrationsPanel(SportsManagementApp parentFrame) {
+            this.parentFrame = parentFrame; // Save the reference to the parent frame
             setLayout(new BorderLayout());
 
+            // Initialize menu list
             String[] menuItems = {"Participants", "Payments", "ID Cards"};
             menuList = new JList<>(menuItems);
             menuList.setFont(new Font("Arial", Font.BOLD, 18));
             menuList.setFixedCellHeight(50);
             menuList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
+            // Create tables
             participantTable = createTable(
                     new String[]{"Name", "Event", "Category", "Registration Status"},
                     new Object[][]{
-                            {"Alex Johnson", "Summer Tournament", "Amateur", "Confirmed"},
-                            {"Maria Rodriguez", "Youth Championship", "Junior", "Pending"}
+                            {"Sujala", "Summer Tournament", "Amateur", "Confirmed"},
+                            {"Maria", "Youth Championship", "Junior", "Pending"}
                     }
             );
             paymentTable = createTable(
                     new String[]{"Participant", "Amount", "Payment Method", "Status"},
                     new Object[][]{
-                            {"Alex Johnson", "$100", "Credit Card", "Verified"},
-                            {"Maria Rodriguez", "$50", "Bank Transfer", "Pending"}
+                            {"Sujala", "$100", "Credit Card", "Verified"},
+                            {"Maria", "$50", "Bank Transfer", "Pending"}
                     }
             );
 
+            // Right panel for displaying content
             rightPanel = new JPanel(new BorderLayout());
             menuList.addListSelectionListener(event -> {
                 if (!event.getValueIsAdjusting()) {
                     String selectedMenu = menuList.getSelectedValue();
-                    if ("Participants".equals(selectedMenu)) {
-                        updateRightPanel(participantTable, "Participants");
-                    } else if ("Payments".equals(selectedMenu)) {
-                        updateRightPanel(paymentTable, "Payments");
-                    } else if ("ID Cards".equals(selectedMenu)) {
-                        rightPanel.removeAll();
-                        rightPanel.add(new JLabel("ID Card Generation", JLabel.CENTER), BorderLayout.NORTH);
-                        JButton generateButton = new JButton("Generate ID Cards");
-                        generateButton.addActionListener(actionEvent -> generateIDCards());
-                        rightPanel.add(generateButton, BorderLayout.CENTER);
-                        rightPanel.revalidate();
-                        rightPanel.repaint();
+                    switch (selectedMenu) {
+                        case "Participants" -> updateRightPanel(participantTable, "Participants");
+                        case "Payments" -> updateRightPanel(paymentTable, "Payments");
+                        case "ID Cards" -> showIDCardGeneration();
                     }
                 }
             });
 
+            // Split pane for menu and right panel
             JSplitPane splitPane = new JSplitPane(
                     JSplitPane.HORIZONTAL_SPLIT,
                     new JScrollPane(menuList),
@@ -632,6 +748,14 @@ public class SportsManagementApp extends JFrame {
             );
             splitPane.setDividerLocation(200);
             add(splitPane, BorderLayout.CENTER);
+
+            // Back to Dashboard button
+            backButton = new JButton("Back to Dashboard");
+            backButton.addActionListener(e -> parentFrame.navigateToPanel("Dashboard"));
+
+            JPanel bottomPanel = new JPanel();
+            bottomPanel.add(backButton);
+            add(bottomPanel, BorderLayout.SOUTH);
         }
 
         private JTable createTable(String[] columns, Object[][] data) {
@@ -657,6 +781,18 @@ public class SportsManagementApp extends JFrame {
             buttonPanel.add(deleteButton);
 
             rightPanel.add(buttonPanel, BorderLayout.SOUTH);
+            rightPanel.revalidate();
+            rightPanel.repaint();
+        }
+
+        private void showIDCardGeneration() {
+            rightPanel.removeAll();
+            rightPanel.add(new JLabel("ID Card Generation", JLabel.CENTER), BorderLayout.NORTH);
+
+            JButton generateButton = new JButton("Generate ID Cards");
+            generateButton.addActionListener(actionEvent -> generateIDCards());
+            rightPanel.add(generateButton, BorderLayout.CENTER);
+
             rightPanel.revalidate();
             rightPanel.repaint();
         }
@@ -741,8 +877,11 @@ public class SportsManagementApp extends JFrame {
                 e.printStackTrace();
             }
 
-            SportsManagementApp app = new SportsManagementApp();
-            app.setVisible(true);
+            // Launch the login page
+            new LoginPage(() -> {
+                // Launch the Sports Management App after successful login
+                SportsManagementApp app = new SportsManagementApp();
+                app.setVisible(true);
+            });
         });
-    }
-}
+    }}
