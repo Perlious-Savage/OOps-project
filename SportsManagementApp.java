@@ -787,15 +787,61 @@ public class SportsManagementApp extends JFrame {
 
         private void showIDCardGeneration() {
             rightPanel.removeAll();
-            rightPanel.add(new JLabel("ID Card Generation", JLabel.CENTER), BorderLayout.NORTH);
+            rightPanel.setLayout(new BorderLayout());
+
+            JLabel headerLabel = new JLabel("ID Card Generation", JLabel.CENTER);
+            headerLabel.setFont(new Font("Arial", Font.BOLD, 20));
+            rightPanel.add(headerLabel, BorderLayout.NORTH);
+
+            // Create preview area
+            JPanel previewPanel = new JPanel();
+            previewPanel.setLayout(new BoxLayout(previewPanel, BoxLayout.Y_AXIS));
+            previewPanel.setBorder(BorderFactory.createTitledBorder("Preview"));
+
+            // Add participant selection for preview
+            JButton previewButton = new JButton("Preview Selected Participant's ID Card");
+            previewButton.addActionListener(e -> {
+                int selectedRow = participantTable.getSelectedRow();
+                if (selectedRow == -1) {
+                    JOptionPane.showMessageDialog(this, "Please select a participant to preview.", "No Selection", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+
+                String name = (String) participantTable.getValueAt(selectedRow, 0);
+                String event = (String) participantTable.getValueAt(selectedRow, 1);
+                String category = (String) participantTable.getValueAt(selectedRow, 2);
+
+                // Clear previous preview
+                previewPanel.removeAll();
+
+                // Simulate ID card design
+                JPanel idCard = new JPanel();
+                idCard.setLayout(new GridLayout(5, 1, 5, 5));
+                idCard.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
+                idCard.setPreferredSize(new Dimension(250, 150));
+
+                idCard.add(new JLabel("Sports Management System", JLabel.CENTER));
+                idCard.add(new JLabel("Name: " + name, JLabel.CENTER));
+                idCard.add(new JLabel("Event: " + event, JLabel.CENTER));
+                idCard.add(new JLabel("Category: " + category, JLabel.CENTER));
+                idCard.add(new JLabel("Status: Active", JLabel.CENTER));
+
+                previewPanel.add(idCard);
+                previewPanel.revalidate();
+                previewPanel.repaint();
+            });
+
+            rightPanel.add(previewButton, BorderLayout.CENTER);
+            rightPanel.add(previewPanel, BorderLayout.SOUTH);
 
             JButton generateButton = new JButton("Generate ID Cards");
             generateButton.addActionListener(actionEvent -> generateIDCards());
-            rightPanel.add(generateButton, BorderLayout.CENTER);
+            rightPanel.add(generateButton, BorderLayout.EAST);
 
             rightPanel.revalidate();
             rightPanel.repaint();
         }
+
 
         private void generateIDCards() {
             JOptionPane.showMessageDialog(this,
